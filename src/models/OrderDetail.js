@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const OrderDetailSchema = new Schema(
     {
         orderID: { type: mongoose.Schema.Types.ObjectId , required: true },
-        orderDetailID: { type: String, require: true},
+        orderDetailsID: { type: String, require: true},
         tableID: { type: mongoose.Schema.Types.ObjectId, ref: 'Table' , required: true },
         tableNumber: { type: Number, required: true },
         totalPrice: { type: Number, required: true },
