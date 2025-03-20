@@ -1,28 +1,68 @@
-const Order = require('../models/Order');
+const mongoose = require('mongoose');
+const Order = require('../models/OrderDetail');
 
+/**
+ * API 1: Tạo đơn hàng mới
+ * POST /api/orders/create
+ */
+// Hàm helper: xác định ca trực dựa trên thời gian 
+function getShiftByTime(date) {
+  const totalMinutes = date.getHours() * 60 + date.getMinutes();
+  // CA1: 6:50 đến 9:20 → từ 410 phút đến 560 phút
+  if (totalMinutes >= 410 && totalMinutes <= 560) {
+    return "CA1";
+  }
+  // CA2: 9:30 đến 12:00 → từ 570 phút đến 720 phút
+  else if (totalMinutes >= 570 && totalMinutes <= 720) {
+    return "CA2";
+  }
+  // CA3: 12:45 đến 15:15 → từ 765 phút đến 915 phút
+  else if (totalMinutes >= 765 && totalMinutes <= 915) {
+    return "CA3";
+  }
+  // CA4: 15:25 đến 17:55 → từ 925 phút đến 1075 phút
+  else if (totalMinutes >= 925 && totalMinutes <= 1075) {
+    return "CA4";
+  }
+  else {
+    return "Overtime";
+  }
+}
 exports.createOrder = async (req, res) => {
   try {
-    const { table_id, order_items } = req.body;
+    const { table_id, table_number, shift_id } = req.body;
     
-    // Tính tổng tiền (ví dụ mặc định là 0, bạn có thể thay đổi)
-    const totalPrice = 0;
+    const createdTime = new Date();
 
-    // Tạo mới đơn hàng
+    const finalShiftID = shift_id ? shift_id : getShiftByTime(createdTime);
+
+    const newOrderID = new mongoose.Types.ObjectId();
+    const orderDetailsID = 'OD' + Date.now();
+
     const newOrder = new Order({
+      orderID: newOrderID,
+      orderDetailsID: orderDetailsID,
+      tableID: table_id,
+      tableNumber: table_number,
+      totalPrice: 0,
+      createdTime: createdTime,
       orderStatus: 'pending',
-      totalPrice,
-      table: table_id,
-      // Nếu có thông tin nhân viên phục vụ, thêm employee: ...
-      order_items: order_items || [] // Nếu đơn hàng được tạo kèm các món, có thể đặt sẵn
+      shiftID: finalShiftID, 
+      listMeal: []
     });
 
     const savedOrder = await newOrder.save();
-
-    // Trả về thông tin đơn hàng
     res.status(201).json({
       order_id: savedOrder._id,
-      status: savedOrder.orderStatus,
-      created_at: savedOrder.createdTime,
+      orderID: savedOrder.orderID,
+      orderDetailsID: savedOrder.orderDetailsID,
+      table_id: savedOrder.tableID,
+      table_number: savedOrder.tableNumber,
+      shift_id: savedOrder.shiftID,
+      total_price: savedOrder.totalPrice,
+      created_time: savedOrder.createdTime,
+      order_status: savedOrder.orderStatus,
+      listMeal: savedOrder.listMeal
     });
   } catch (error) {
     console.error('Error in createOrder:', error);
@@ -30,119 +70,125 @@ exports.createOrder = async (req, res) => {
   }
 };
 
+/**
+ * API 2: Thêm món vào đơn hàng
+ * POST /api/orders/add-item
+ */
 exports.addItem = async (req, res) => {
   try {
-    const { order_id, menu_item_id, quantity, note } = req.body;
+    const { order_id, name, note, quantity, price, status, mealID } = req.body;
 
-    // Tìm đơn hàng theo order_id
     const order = await Order.findById(order_id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // Thêm món vào mảng order_items
-    order.order_items.push({ menu_item_id, quantity, note });
-
-    // cập nhật lại tổng tiền (totalPrice) tại đây dựa vào thông tin của món ăn.
-    // Ví dụ: order.totalPrice += quantity * menuItemPrice;
+    order.listMeal.push({
+      name,
+      note,
+      quantity,
+      price,
+      status,
+      mealID
+    });
 
     const updatedOrder = await order.save();
-
     res.status(200).json({
       message: 'Item added successfully',
-      updated_order: updatedOrder,
+      updated_order: updatedOrder
     });
   } catch (error) {
     console.error('Error in addItem:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
-// Hàm xem chi tiết đơn hàng (API 3)
+
+/**
+ * API 3: Xem chi tiết đơn hàng
+ * GET /api/orders/:order_id
+ */
 exports.getOrderDetails = async (req, res) => {
   try {
-    // Lấy order_id từ URL params
     const { order_id } = req.params;
-    
-    // Tìm đơn hàng theo order_id
     const order = await Order.findById(order_id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // Trả về thông tin chi tiết của đơn hàng
     res.status(200).json({
       order_id: order._id,
-      table_id: order.table,
-      order_items: order.order_items,
+      orderID: order.orderID,
+      orderDetailsID: order.orderDetailsID,
+      table_id: order.tableID,
+      table_number: order.tableNumber,
       total_price: order.totalPrice,
-      status: order.orderStatus,
+      created_time: order.createdTime,
+      order_status: order.orderStatus,
+      listMeal: order.listMeal
     });
   } catch (error) {
     console.error('Error in getOrderDetails:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
-// Hàm huỷ món đã đặt (API 4)
+
+/**
+ * API 4: Huỷ món đã đặt
+ * DELETE /api/orders/:order_id/item/:item_id
+ */
 exports.cancelItem = async (req, res) => {
   try {
     const { order_id, item_id } = req.params;
-
-    // Tìm đơn hàng theo order_id
     const order = await Order.findById(order_id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // Ghi nhận số lượng phần tử trước khi loại bỏ
-    const initialLength = order.order_items.length;
-    
-    // Sử dụng pull để loại bỏ phần tử có _id tương ứng
-    order.order_items.pull(item_id);
+    const initialLength = order.listMeal.length;
 
-    // Nếu số lượng không thay đổi, có nghĩa phần tử không tồn tại
-    if (order.order_items.length === initialLength) {
-      return res.status(404).json({ error: 'Item not found in order' });
+    order.listMeal.pull(item_id);
+
+    if (order.listMeal.length === initialLength) {
+      return res.status(404).json({ error: 'Item not found in listMeal' });
     }
 
-    // Lưu lại đơn hàng sau khi cập nhật
     const updatedOrder = await order.save();
-
     res.status(200).json({
       message: 'Item canceled successfully',
-      updated_order: updatedOrder,
+      updated_order: updatedOrder
     });
   } catch (error) {
     console.error('Error in cancelItem:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
-// API 5
+
+/*
+ * API 5: Xác nhận món ăn đã hoàn thành
+ * POST /api/kitchen/confirm-item
+ */
 exports.confirmItem = async (req, res) => {
   try {
-    const { order_id, menu_item_id } = req.body;
+    const { order_id, mealID } = req.body; 
     
-    // Tìm đơn hàng theo order_id
     const order = await Order.findById(order_id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
-    
-    // Cập nhật trạng thái cho tất cả các order_items có menu_item_id khớp
+
     let updated = false;
-    order.order_items.forEach(item => {
-      // So sánh bằng cách chuyển ObjectId sang chuỗi
-      if (item.menu_item_id.toString() === menu_item_id && !item.confirmed) {
-        item.confirmed = true;
+    order.listMeal.forEach(meal => {
+      if (meal.mealID.toString() === mealID && meal.status !== 'confirmed') {
+        meal.status = 'confirmed';
         updated = true;
       }
     });
-    
+
     if (!updated) {
-      return res.status(404).json({ error: 'Item not found or already confirmed' });
+      return res.status(404).json({ error: 'Meal not found or already confirmed' });
     }
-    
+
     const updatedOrder = await order.save();
-    
     res.status(200).json({
       message: 'Xác nhận món đã sẵn sàng để phục vụ',
       updated_order: updatedOrder
@@ -152,25 +198,143 @@ exports.confirmItem = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
-// API6 
-// Hàm lấy danh sách đơn hàng đang chờ chế biến (trạng thái "pending")
+
+/**
+ * API 6: Xem danh sách món đang chờ chế biến
+ * GET /api/kitchen/orders
+ * Giả sử: "đang chờ chế biến" nghĩa là orderStatus = "pending"
+ */
 exports.getPendingOrders = async (req, res) => {
   try {
-    // Lấy các đơn hàng có trạng thái "pending"
+    // Lọc các đơn hàng có orderStatus = "pending"
     const pendingOrders = await Order.find({ orderStatus: "pending" })
-      .select("_id table order_items")
+      .select("_id tableID listMeal")
       .lean();
 
-    // Định dạng kết quả: trả về order_id, table_id và items (order_items)
+    // Định dạng kết quả
     const formattedOrders = pendingOrders.map(order => ({
       order_id: order._id,
-      table_id: order.table,
-      items: order.order_items
+      table_id: order.tableID,
+      items: order.listMeal
     }));
 
     res.status(200).json({ pending_orders: formattedOrders });
   } catch (error) {
     console.error("Error in getPendingOrders:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+/**
+ * API 7 (mới): Hoàn tất đơn hàng
+ * POST /api/orders/complete
+ * Tính tổng tiền dựa trên listMeal, cập nhật totalPrice, 
+ * và có thể đặt orderStatus = "completed".
+ */
+exports.completeOrder = async (req, res) => {
+  try {
+    const { order_id } = req.body;
+    const order = await Order.findById(order_id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    let finalBill = 0;
+    order.listMeal.forEach(meal => {
+      finalBill += meal.quantity * meal.price;
+    });
+
+    order.totalPrice = finalBill;
+    order.orderStatus = 'completed';
+
+    await order.save();
+
+    res.status(200).json({
+      message: 'Đơn hàng đã được hoàn tất',
+      final_bill: {
+        order_id: order._id,
+        table_id: order.tableID,
+        table_number: order.tableNumber,
+        total_price: finalBill,
+        items: order.listMeal
+      }
+    });
+  } catch (error) {
+    console.error('Error in completeOrder:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// API 8 Doanh thu
+exports.getRevenue = async (req, res) => {
+  try {
+    const { start_date, shift_id, end_date } = req.query;
+    
+    if (!start_date) {
+      return res.status(400).json({ error: "start_date is required" });
+    }
+    
+    const startDate = new Date(start_date);
+    const endDate = end_date ? new Date(end_date) : new Date();
+
+    const filter = {
+      createdTime: { $gte: startDate, $lte: endDate }
+    };
+
+    if (shift_id) {
+      filter.shiftID = shift_id;
+    }
+
+    const orders = await Order.find(filter).lean();
+
+    const total_orders = orders.length;
+    let total_revenue = 0;
+    orders.forEach(order => {
+      total_revenue += order.totalPrice;
+    });
+
+    res.status(200).json({
+      total_orders,
+      total_revenue,
+      detail_orders: orders
+    });
+  } catch (error) {
+    console.error('Error in getRevenue:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+// API 9: LỊch sử hóa đơn 
+exports.getOrderHistory = async (req, res) => {
+  try {
+    const { start_date, end_date } = req.query;
+    
+    if (!start_date) {
+      return res.status(400).json({ error: "start_date is required" });
+    }
+    
+    const startDate = new Date(start_date);
+    const endDate = end_date ? new Date(end_date) : new Date();
+    
+    const filter = {
+      createdTime: { $gte: startDate, $lte: endDate },
+      orderStatus: 'completed'
+    };
+
+    const orders = await Order.find(filter)
+      .select("_id tableID totalPrice orderStatus createdTime")
+      .lean();
+
+    const orderHistory = orders.map(order => ({
+      order_id: order._id,
+      table_id: order.tableID,
+      total_price: order.totalPrice,
+      status: order.orderStatus,
+      timestamp: order.createdTime
+    }));
+
+    res.status(200).json({ orders: orderHistory });
+  } catch (error) {
+    console.error("Error in getOrderHistory:", error);
     res.status(500).json({ error: "Server error" });
   }
 };

@@ -9,6 +9,8 @@ const OrderDetailSchema = new Schema(
         tableNumber: { type: Number, required: true },
         totalPrice: { type: Number, required: true },
         createdTime: { type: Date, required: true },
+        orderStatus: { type: String, default: 'pending' },
+        shiftID: { type: String, required: true },
         listMeal: [
             {
                 name: {type: String, required: true },
@@ -18,7 +20,15 @@ const OrderDetailSchema = new Schema(
                 status: {type: String, required: true },
                 mealID: { type: mongoose.Schema.Types.ObjectId, ref: 'Meal' , required: true}
             }
-        ]
+        ],
+       /* order_items: [
+              {
+                menu_item_id: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' },
+                quantity: { type: Number, required: true },
+                note: { type: String },
+                confirmed: { type: Boolean, default: false },
+              }
+            ]*/
     },
     {
         timestamps: true,
