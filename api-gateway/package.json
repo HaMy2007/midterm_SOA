@@ -1,5 +1,5 @@
 {
-  "name": "midterm_soa",
+  "name": "api-gateway",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -11,11 +11,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "api-gateway": "file:",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "http-proxy-middleware": "^3.0.3",
-    "midterm_soa": "file:",
-    "mongoose": "^8.12.1"
+    "http-proxy-middleware": "^3.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

@@ -21,14 +21,6 @@ const OrderDetailSchema = new Schema(
                 mealID: { type: mongoose.Schema.Types.ObjectId, ref: 'Meal' , required: true}
             }
         ],
-       /* order_items: [
-              {
-                menu_item_id: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' },
-                quantity: { type: Number, required: true },
-                note: { type: String },
-                confirmed: { type: Boolean, default: false },
-              }
-            ]*/
     },
     {
         timestamps: true,

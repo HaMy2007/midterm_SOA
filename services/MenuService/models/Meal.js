@@ -7,7 +7,7 @@ const MealSchema = new Schema(
         price: { type: Number, required: true },
         ingredients: [
             {
-                ingredientID: { type: Schema.Types.ObjectId, ref: 'Ingredient', required: true },
+                // ingredientID: { type: Schema.Types.ObjectId, ref: 'Ingredient', required: true },
                 quantity: { type: Number, required: true },
                 name: { type: String, required: true },
             }
@@ -18,4 +18,4 @@ const MealSchema = new Schema(
     },
 );
 
-module.exports = mongoose.model('Meal', MealSchema);
+module.exports = mongoose.model('meals', MealSchema);

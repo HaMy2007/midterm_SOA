@@ -1,5 +1,5 @@
 {
-  "name": "midterm_soa",
+  "name": "orderingservice",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -11,13 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "http-proxy-middleware": "^3.0.3",
-    "midterm_soa": "file:",
-    "mongoose": "^8.12.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9"
+    "cors": "^2.8.5",
+    "orderingservice": "file:"
   }
 }
