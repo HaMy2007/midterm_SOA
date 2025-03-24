@@ -5,7 +5,7 @@ const OrderDetailSchema = new Schema(
     {
         orderID: { type: mongoose.Schema.Types.ObjectId , required: true },
         orderDetailsID: { type: String, require: true},
-        tableID: { type: mongoose.Schema.Types.ObjectId, ref: 'Table' , required: true },
+        tableID: { type: mongoose.Schema.Types.ObjectId, ref: 'tables' , required: true },
         tableNumber: { type: Number, required: true },
         totalPrice: { type: Number, required: true },
         createdTime: { type: Date, required: true },
@@ -18,7 +18,7 @@ const OrderDetailSchema = new Schema(
                 quantity: { type: Number, required: true },
                 price: {type: Number, required: true },
                 status: {type: String, required: true },
-                mealID: { type: mongoose.Schema.Types.ObjectId, ref: 'Meal' , required: true}
+                mealID: { type: mongoose.Schema.Types.ObjectId, ref: 'meals' , required: true}
             }
         ],
     },
@@ -27,4 +27,4 @@ const OrderDetailSchema = new Schema(
     },
 );
 
-module.exports = mongoose.model('OrderDetail', OrderDetailSchema);
+module.exports = mongoose.model('orderdetails', OrderDetailSchema);

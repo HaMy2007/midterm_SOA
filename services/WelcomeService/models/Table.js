@@ -11,4 +11,4 @@ const TableSchema = new Schema(
     },
 );
 
-module.exports = mongoose.model('Table', TableSchema);
+module.exports = mongoose.model('tables', TableSchema);
