@@ -13,7 +13,7 @@ const OrderFee = (props: Props) => {
           </span>
         </div>
         <div className="w-full h-0.5 rounded-md bg-red-500"></div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="font-bold">Subtotal</span>
             <span>106.000</span>
@@ -26,7 +26,7 @@ const OrderFee = (props: Props) => {
             <span className="font-bold">Total</span>
             <span>106.000</span>
           </div>
-          <Button className="p-0" onClick={() => {}}>
+          <Button className="py-1 text-xl" onClick={() => {}}>
             Checkout
           </Button>
         </div>
