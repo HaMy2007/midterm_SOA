@@ -11,9 +11,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "menuservice": "file:",
-    "mongoose": "^8.12.1"
+    "express": "^4.21.2",
+    "menuservice": "file:"
+  },
+  "devDependencies": {
+    "cors": "^2.8.5",
+    "mongoose": "^8.13.0",
+    "nodemon": "^3.1.9"
   }
 }

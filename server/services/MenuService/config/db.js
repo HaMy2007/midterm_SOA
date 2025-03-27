@@ -18,3 +18,5 @@ mongoose.connect(mongoURI, {
 .catch((err) => {
     console.error("Database connection error:", err);
 });
+
+console.log("mongo:", process.env.MONGO_URL);
