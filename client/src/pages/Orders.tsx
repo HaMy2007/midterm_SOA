@@ -5,14 +5,14 @@ import { useNavigate } from "react-router";
 import { useRole } from "../context/RoleContext";
 
 const Orders = () => {
-  const {
-    orders,
-    removeOrderFromListOrder,
-    updateOrderFromListOrder,
-    updateOrderStatus,
-  } = useCart();
+  const { orders, removeOrderFromListOrder, updateOrderStatus } = useCart();
   const { role } = useRole();
   const navigate = useNavigate();
+
+  const handleEdit = (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`edit-order/${orderId}`);
+  };
 
   return (
     <div className="h-full flex items-center flex-col p-4 bg-menu gap-3">
@@ -57,11 +57,17 @@ const Orders = () => {
                     </button>
 
                     <button
-                      className={`rounded text-white bg-blue-600 hover:bg-blue-700 p-2 transition duration-200"}`}
+                      className={`rounded text-white bg-blue-600 hover:bg-blue-700 p-2 transition duration-200 ${
+                        item.status === "completed"
+                          ? "cursor-not-allowed bg-blue-600 hover:bg-blue-700"
+                          : "cursor-pointer"
+                      }}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateOrderFromListOrder(item.id);
+                        // updateOrderFromListOrder(item.id);
+                        handleEdit(item.id, e);
                       }}
+                      disabled={item.status === "completed"}
                     >
                       <MdModeEditOutline />
                     </button>

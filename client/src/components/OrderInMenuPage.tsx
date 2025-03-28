@@ -1,14 +1,13 @@
 // phan order ben phai trong trang menu
 
 import { useCart } from "../context/CartContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import OrderItem from "./OrderItem";
-import { useRole } from "../context/RoleContext";
 
 function OrderInMenuPage() {
   const navigate = useNavigate();
-  const { placeOrder } = useCart();
-  const { role } = useRole();
+  const { placeOrder, setNote } = useCart();
+  const { role } = useParams();
 
   const handleAddToOrder = () => {
     placeOrder();
@@ -71,6 +70,17 @@ function OrderInMenuPage() {
           <span className="font-bold">${totalPrice}</span>
         </div>
       )}
+
+      {(role === "customer" || role === "manager") && (
+        <div>
+          <input
+            className="mt-3 mb-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Note"
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </div>
+      )}
+
       <div className="flex items-center justify-center">
         <button
           onClick={() => {

@@ -8,13 +8,14 @@ type CartContextType = {
   menuItems: MenuItemType[];
   totalPrice: number;
   selectedTable: string;
+  note: string;
   addToCart: (item: MenuItemType) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   removeOrderFromListOrder: (id: string) => void;
-  updateOrderFromListOrder: (id: string) => void;
   placeOrder: () => void;
   setSelectedTable: (name: string) => void;
+  setNote: (note: string) => void;
   updateOrderStatus: (name: string, newStatus: string) => void;
   updateMenuItem: (id: string, updates: Partial<MenuItemType>) => void;
   handleLockToggle: (id: string) => void;
@@ -23,6 +24,7 @@ type CartContextType = {
     itemId: string,
     newStatus: string
   ) => void;
+  updateOrderItem: (orderId: string, updatedItems: MenuItemType[]) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,6 +36,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(menuItemData);
   const [selectedTable, setSelectedTable] = useState<string>("Table 1");
+  const [note, setNote] = useState<string>("");
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + Number(item.price) * item.quantity,
@@ -47,7 +50,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       totalPrice: totalPrice,
       tableNumber: selectedTable,
       date: new Date().toLocaleString(),
-      note: "them nhieu ot",
+      note: note,
       status: "confirmed",
     };
 
@@ -92,8 +95,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setOrders((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  const updateOrderFromListOrder = (id: string) => {};
-
   const updateOrderStatus = (id: string, newStatus: string) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
@@ -126,14 +127,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  const updateOrderItem = (orderId: string, updatedItems: MenuItemType[]) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              items: updatedItems,
+              totalPrice: updatedItems.reduce(
+                (total, item) => total + Number(item.price) * item.quantity,
+                0
+              ),
+            }
+          : order
+      )
+    );
+  };
+
   return (
     <CartContext.Provider
       value={{
+        updateOrderItem,
+        setNote,
+        note,
         menuItems,
         handleLockToggle,
         updateMenuItem,
         updateOrderStatus,
-        updateOrderFromListOrder,
         selectedTable,
         setSelectedTable,
         cartItems,

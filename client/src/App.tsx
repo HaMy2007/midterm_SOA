@@ -8,6 +8,7 @@ import Orders from "./pages/Orders";
 import Reviews from "./pages/Reviews";
 import { CartProvider } from "./context/CartContext";
 import OrderDetail from "./components/OrderDetail";
+import EditOrder from "./components/EditOrder";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
               <Route index element={<Menu />} />
               <Route path="orders" element={<Orders />} />
               <Route path="orders/:id" element={<OrderDetail />} />
+              <Route path="orders/edit-order/:id" element={<EditOrder />} />
               <Route path="reviews" element={<Reviews />} />
             </Route>
           </Routes>
