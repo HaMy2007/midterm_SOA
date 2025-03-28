@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const TableSchema = new Schema(
     {
         tableNumber: { type: Number, required: true },
-        status: { type: String, require: true},
+        status: { type: String, default: 'free', require: true},
     },
     {
         timestamps: true,

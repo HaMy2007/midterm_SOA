@@ -1,4 +1,5 @@
 const Meal = require("../models/Meal");
+const mongoose = require('mongoose');
 
 // Lấy danh sách món ăn
 exports.getMeals = async (req, res) => {
