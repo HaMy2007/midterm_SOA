@@ -1,8 +1,6 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-
 const app = express();
-app.use(express.json());
 
 app.use((req, res, next) => {
     console.log(`📡 Request: ${req.method} ${req.originalUrl}`);
@@ -10,10 +8,21 @@ app.use((req, res, next) => {
 });
 
 // Chuyển hướng API đến từng service
-app.use("/menu", createProxyMiddleware({ target: "http://localhost:3000", changeOrigin: true , logLevel: "debug"}));
-app.use("/order", createProxyMiddleware({ target: "http://localhost:3001", changeOrigin: true }));
-app.use("/welcome", createProxyMiddleware({ target: "http://localhost:3002", changeOrigin: true }));
-
+app.use("/menu", createProxyMiddleware({ 
+    target: "http://localhost:3000", 
+    changeOrigin: true , 
+    logLevel: "debug", 
+}));
+app.use("/order", createProxyMiddleware({ 
+    target: "http://localhost:3001", 
+    changeOrigin: true , 
+    logLevel: "debug",
+}));
+app.use("/welcome", createProxyMiddleware({ 
+    target: "http://localhost:3002", 
+    changeOrigin: true , 
+    logLevel: "debug"
+}));
 
 
 const PORT = 1234;
