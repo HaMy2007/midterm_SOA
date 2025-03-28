@@ -22,4 +22,4 @@ mongoose
     console.error("Database connection error:", err);
   });
 
-console.log("mongo:", process.env.MONGO_URL);
+// console.log("mongo:", process.env.MONGO_URL);
