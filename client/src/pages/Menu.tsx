@@ -1,52 +1,34 @@
-import { menuItems } from "../data/MenuData";
+// trang menu, khong tinh phan sidebar vi da duoc goi trong dashboard
+
 import MenuSection from "../components/MenuSection";
 import MainHeadingTitle from "../components/MainHeadingTitle";
-import { useState } from "react";
-
-type Props = {};
+import OrderInMenuPage from "../components/OrderInMenuPage";
+import { useCart } from "../context/CartContext";
 
 const Menu = () => {
-  const [optionsState, setOptionState] = useState("");
+  const { cartItems, menuItems } = useCart();
 
   return (
-    <div className="flex flex-col gap-4 items-center bg-menu py-4 px-2">
-      <div className="flex items-center gap-4 justify-between">
-        <div className="basis-2/12"></div>
-        <div className="basis-8/12">
-          <MainHeadingTitle
-            title="Our Menu"
-            subtitle="Discover a feast of flavors with our exciting menu!"
-          />
-        </div>
+    <div className="grid grid-cols-12 gap-3.5 h-full">
+      <div
+        className={` ${
+          cartItems.length !== 0 ? "col-span-9" : "col-span-12"
+        }   flex flex-col gap-4 items-center bg-menu py-4 px-2 col-span-9 h-full overflow-y-auto `}
+      >
+        <MainHeadingTitle
+          title="Our Menu"
+          subtitle="Discover a feast of flavors with our exciting menu!"
+        />
 
-        <div className="w-3/5 flex basis-2/12 items-center justify-center text-center">
-          <label className="text-lg font-semibold">
-            <span className="">Please select table number:</span>
-            <select
-              className="bg-title-section-menu text-white font-medium rounded-md px-3 py-2 w-full mt-2 border border-gray-400 focus:ring-2 focus:ring-pink-500 outline-none"
-              value={optionsState}
-              onChange={(e) => setOptionState(e.target.value)}
-            >
-              <option className="bg-white text-black py-2 my-1" value="1">
-                1
-              </option>
-              <option className="bg-white text-black py-2 my-1" value="2">
-                2
-              </option>
-              <option className="bg-white text-black py-2 my-1" value="3">
-                3
-              </option>
-            </select>
-          </label>
+        <div>
+          <MenuSection menuItems={menuItems} title="BURGERS" />
+          <MenuSection menuItems={menuItems} title="BURGERS" />
+          <MenuSection menuItems={menuItems} title="BURGERS" />
+          <MenuSection menuItems={menuItems} title="BURGERS" />
         </div>
       </div>
 
-      <div>
-        <MenuSection menuItems={menuItems} title="BURGERS" />
-        <MenuSection menuItems={menuItems} title="BURGERS" />
-        <MenuSection menuItems={menuItems} title="BURGERS" />
-        <MenuSection menuItems={menuItems} title="BURGERS" />
-      </div>
+      {cartItems.length !== 0 && <OrderInMenuPage />}
     </div>
   );
 };

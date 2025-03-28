@@ -19,7 +19,10 @@ const MenuSection = ({ menuItems, title }: Props) => {
             name={item.name}
             description={item.description}
             price={item.price}
-            isAvailable={item.isAvailable}
+            quantity={item.quantity}
+            id={item.id}
+            status={item.status}
+            isLocked={item.isLocked}
           />
         ))}
       </div>

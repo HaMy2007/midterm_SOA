@@ -1,22 +1,19 @@
 import { useRole } from "../context/RoleContext";
 import { Link } from "react-router-dom";
 import {
-  HomeIcon,
   ShoppingCartIcon,
-  CalendarIcon,
-  UsersIcon,
   StarIcon,
-  CogIcon,
   BackwardIcon,
 } from "@heroicons/react/24/outline";
 
 import logo from "../assets/logo.png";
+import { useParams } from "react-router";
 
 const Sidebar = () => {
-  const { role } = useRole(); // Lấy vai trò từ context
+  const { role } = useParams();
 
   return (
-    <div className="h-screen w-64 bg-orange-100 p-4">
+    <div className="h-screen bg-orange-100 p-4">
       <div className="bg-title-section-menu flex items-center justify-center gap-2 rounded-lg p-1">
         <img src={logo} alt="logo" className="w-14 h-14 rounded-full" />
         <h1 className="text-xl font-bold text-white">BEST MEAL !</h1>
@@ -24,21 +21,11 @@ const Sidebar = () => {
 
       <div className="flex flex-col space-y-2 pt-4">
         {role === "customer" && <></>}
-        {role === "chef" && (
-          <>
-            <Link
-              to="/dashboard/reservations"
-              className="flex items-center p-2 rounded-lg hover:bg-orange-200"
-            >
-              <CalendarIcon className="h-6 w-6 text-orange-600" />
-              <span className="ml-2">Reservations</span>
-            </Link>
-          </>
-        )}
+        {role === "chef" && <></>}
         {role === "manager" && (
           <>
             <Link
-              to="/dashboard/reviews"
+              to={`/${role}/dashboard/reviews`}
               className="flex items-center p-2 rounded-lg hover:bg-orange-200"
             >
               <StarIcon className="h-6 w-6 text-orange-600" />
@@ -48,7 +35,7 @@ const Sidebar = () => {
         )}
         {/* =======common======= */}
         <Link
-          to="/dashboard/menu"
+          to={`/${role}/dashboard`}
           className="flex items-center p-2 gap-2 rounded-lg hover:bg-orange-200"
         >
           <svg
@@ -70,7 +57,7 @@ const Sidebar = () => {
           <span className="ml-2">Menu</span>
         </Link>
         <Link
-          to="/dashboard/orders"
+          to={`/${role}/dashboard/orders`}
           className="flex items-center p-2 rounded-lg hover:bg-orange-200"
         >
           <ShoppingCartIcon className="h-6 w-6 text-orange-600" />

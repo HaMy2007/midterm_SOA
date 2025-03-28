@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+node_modules/
+services/**/node_modules/
+services/MenuService/node_modules/
+services/OrderingService/node_modules/
+services/WelcomeService/node_modules/

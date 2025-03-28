@@ -17,7 +17,7 @@ const RoleSelectionScreen = (props: Props) => {
 
   const handleRoleSelect = (role: string) => {
     setRole(role);
-    navigate("/dashboard");
+    navigate(`/${role}/dashboard`);
   };
 
   return (

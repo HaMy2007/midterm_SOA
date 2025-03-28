@@ -4,6 +4,7 @@ type Props = {
   children: React.ReactNode;
   className?: string;
   onClick: () => void;
+  disabled?: boolean;
 };
 
 const Button = ({ children, onClick, className }: Props) => {
