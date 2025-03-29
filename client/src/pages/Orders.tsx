@@ -4,6 +4,7 @@ import { MdDeleteForever, MdModeEditOutline } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { useRole } from "../context/RoleContext";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 type Order = {
   id: string;
@@ -15,14 +16,42 @@ type Order = {
   shift: string
 };
 
-
 const Orders = () => {
   const { removeOrderFromListOrder,  } = useCart();
   const { role } = useRole();
   const navigate = useNavigate();
-
+  const [selectedTable, setSelectedTable] = useState<number>(0);
+  const [selectedDate, setSelectedDate] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
 
+  const handleFilter = async () => {
+    if (!selectedTable && !selectedDate) {
+      Swal.fire("Thiếu thông tin", "Vui lòng chọn bàn hoặc ngày để lọc.", "warning");
+      return;
+    }
+  
+    try {
+      const params = new URLSearchParams();
+      if (selectedTable) params.append("tableNumber", selectedTable.toString());
+      if (selectedDate) params.append("date", selectedDate);
+  
+      const res = await fetch(`http://localhost:3001/api/orders/filter?${params.toString()}`);
+      const data = await res.json();
+  
+      if (Array.isArray(data)) {
+        setOrders(data);
+      } else {
+        console.error("❌ Dữ liệu trả về không phải là mảng:", data);
+        Swal.fire("Lỗi dữ liệu", "Không thể đọc dữ liệu đơn hàng.", "error");
+        setOrders([]); // fallback
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi lọc đơn:", err);
+      Swal.fire("Lỗi", "Không thể kết nối đến server", "error");
+    }
+  };
+  
   const fetchOrders = async () => {
     try {
       const res = await fetch("http://localhost:1234/order/api/orders");
@@ -36,6 +65,7 @@ const Orders = () => {
         shift: order.shiftID,
         status: order.orderStatus,
       }));
+      setAllOrders(mappedOrders);
       setOrders(mappedOrders);
     } catch (err) {
       console.error("Lỗi lấy dữ liệu order:", err);
@@ -66,26 +96,6 @@ const Orders = () => {
       alert("Cập nhật trạng thái đơn hàng thất bại.");
     }
   };
-  // useEffect(() => {
-  //   fetch("http://localhost:1234/order/api/orders")
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       // Nếu MongoDB trả về _id thì map sang id
-  //       const mappedOrders = data.map((order: any) => ({
-  //         id: order.orderID,
-  //         tableNumber: order.tableNumber,
-  //         totalPrice: order.totalPrice,
-  //         date: order.createdTime,
-  //         note: order.note,
-  //         shift: order.shiftID,
-  //         status: order.orderStatus,
-  //       }));
-  //       setOrders(mappedOrders);
-  //     })
-  //     .catch((err) => {
-  //       console.error("Lỗi lấy dữ liệu order:", err);
-  //     });
-  // }, []);
 
   const handleEdit = (orderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -98,6 +108,32 @@ const Orders = () => {
         <MainHeadingTitle title="Hello customers, here's your orders" />
       </div>
       <div className="h-full items-center w-4/5 bg-white shadow-2xl rounded-3xl p-4 overflow-y-auto">
+      <div className="flex gap-4 items-center mb-4">
+          <select
+            className="p-2 border rounded"
+            value={selectedTable}
+            onChange={(e) => setSelectedTable(Number(e.target.value))}
+          >
+            <option value="">-- Chọn bàn --</option>
+            {[...new Set(allOrders.map(o => o.tableNumber))].map(num => (
+              <option key={num} value={num}>Bàn {num}</option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            className="p-2 border rounded"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+
+          <button
+            onClick={handleFilter}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Search
+          </button>
+        </div>
         {orders.length === 0 ? (
           <div className="flex items-center justify-center">
             <p className="text-black">No orders placed yet.</p>
@@ -126,31 +162,45 @@ const Orders = () => {
 
                 <div className="flex flex-col gap-3 w-full items-end">
                   <div className="flex gap-2">
+                  {item.status === "confirmed" && (
                     <button
                       className={`rounded text-white bg-red-600 hover:bg-red-700 p-2 transition duration-200"}`}
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        removeOrderFromListOrder(item.id);
+                        const result = await Swal.fire({
+                          title: "Bạn có chắc muốn xóa hoá đơn này không?",
+                          text: "Hành động này không thể hoàn tác!",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#d33",
+                          cancelButtonColor: "#3085d6",
+                          confirmButtonText: "Xóa",
+                          cancelButtonText: "Hủy"
+                        });
+                        if (result.isConfirmed) {
+                          await removeOrderFromListOrder(item.id);
+                          await fetchOrders();
+                          Swal.fire("Đã xóa!", "Đơn hàng đã được xóa thành công.", "success");
+                        }
                       }}
                     >
                       <MdDeleteForever />
                     </button>
+                  )}
 
-                    <button
-                      className={`rounded text-white bg-blue-600 hover:bg-blue-700 p-2 transition duration-200 ${
-                        item.status === "completed"
-                          ? "cursor-not-allowed bg-blue-600 hover:bg-blue-700"
-                          : "cursor-pointer"
-                      }}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // updateOrderFromListOrder(item.id);
-                        handleEdit(item.id, e);
-                      }}
-                      disabled={item.status === "completed"}
-                    >
-                      <MdModeEditOutline />
-                    </button>
+                  
+                    {item.status === "confirmed" && (
+                      <button
+                        className="rounded text-white bg-blue-600 hover:bg-blue-700 p-2 transition duration-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(item.id, e);
+                        }}
+                      >
+                        <MdModeEditOutline />
+                      </button>
+                    )}
+
                   </div>
 
                   {role === "customer" ? null : (

@@ -17,6 +17,9 @@ exports.getOrders = async (req, res) => {
 exports.getOrderDetails = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({ error: "ID không hợp lệ" });
+        }
         const objectId = new mongoose.Types.ObjectId(id);
         const order = await Order.findOne({ orderID: objectId });
         if (!order) {
@@ -195,37 +198,30 @@ exports.updateOrderById = async (req, res) => {
   }
 };
 
+exports.updateOrderItems = async (req, res) => {
+  const { id } = req.params;
+  const { listMeal, totalPrice } = req.body;
 
-// exports.updateOrderStatus = async (req, res) => {
-//   const { id } = req.params;
-//   const { status } = req.body;
+  try {
+    const objectOrderId = new mongoose.Types.ObjectId(id);
+    const order = await Order.findOne({ orderID: objectOrderId });
 
-//   try {
-//     const objectOrderId = new mongoose.Types.ObjectId(id);
+    if (!order) return res.status(404).json({ error: "Order not found" });
 
-//     const order = await Order.findOne({ orderID: objectOrderId });
+    order.listMeal = listMeal;
+    order.totalPrice = totalPrice;
 
-//     if (!order) {
-//       return res.status(404).json({ error: 'Order not found' });
-//     }
+    order.markModified("listMeal");
+    await order.save();
 
-//     order.orderStatus = status;
-//     await order.save();
+    res.status(200).json({ message: "Đã cập nhật đơn hàng", order });
+  } catch (err) {
+    console.error("❌ Lỗi:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
-//     if (status === "completed") {
-//       await Table.findByIdAndUpdate(order.tableID, { status: "free" });
-//     }
 
-//     res.status(200).json({
-//       message: 'Cập nhật trạng thái đơn hàng thành công',
-//       orderStatus: order.orderStatus,
-//     });
-
-//   } catch (error) {
-//     console.error('❌ Lỗi khi cập nhật trạng thái đơn hàng:', error);
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// };
 exports.updateOrderStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -266,6 +262,75 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.filterOrders = async (req, res) => {
+  try {
+    const { tableNumber, date } = req.query;
+
+    // Xây dựng điều kiện lọc động
+    const filter = {};
+
+    if (tableNumber) {
+      filter.tableNumber = Number(tableNumber);
+    }
+
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+
+      filter.createdTime = { $gte: start, $lte: end };
+    }
+
+    // Nếu không có bất kỳ điều kiện lọc nào
+    if (!tableNumber && !date) {
+      return res.status(400).json({ error: "Vui lòng cung cấp ít nhất một tiêu chí lọc (bàn hoặc ngày)" });
+    }
+
+    const orders = await Order.find(filter);
+    res.status(200).json(orders);
+  } catch (err) {
+    console.error("❌ Lỗi khi lọc orders:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+exports.deleteOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const objectOrderId = new mongoose.Types.ObjectId(id);
+
+    const deleted = await Order.findOneAndDelete({ orderID: objectOrderId });
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json({
+      message: "Order deleted successfully",
+      deletedOrderID: deleted.orderID,
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi xóa order:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// GET /api/active-table-ids
+exports.getActiveTableIDs = async (req, res) => {
+  try {
+    const activeOrders = await Order.find({ orderStatus: { $ne: "completed" } }).select("tableID");
+    const tableIds = activeOrders.map(order => order.tableID);
+    res.status(200).json({ tableIds });
+  } catch (err) {
+    console.error("❌ Lỗi lấy danh sách tableID từ order chưa hoàn tất:", err);
+    res.status(500).json({ error: "Lỗi server" });
+  }
+};
+
 
 exports.getOrderHistory = async (req, res) => {
     try {

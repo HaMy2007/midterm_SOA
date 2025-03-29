@@ -12,13 +12,11 @@ type CartContextType = {
   addToCart: (item: MenuItemType) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
-  removeOrderFromListOrder: (id: string) => void;
-  placeOrder: () => void;
+  removeOrderFromListOrder: (id: string) => Promise<void>;
+  placeOrder: (orderId: string, tableID: string) => void;
   setSelectedTable: (name: string) => void;
   setNote: (note: string) => void;
-  // updateOrderStatus: (name: string, newStatus: string) => void;
   updateMenuItem: (id: string, updates: Partial<MenuItemType>) => void;
-  // handleLockToggle: (id: string, currentLock: boolean) => void;
   updateOrderStatusForMeal: (
     orderId: string,
     itemId: string,
@@ -44,53 +42,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     0
   );
 
-  const placeOrder = () => {
-    const newOrder = {
-      id: crypto.randomUUID(),
+  const placeOrder = (orderId: string, tableID: string) => {
+    const newOrder: OrderType = {
+      id: orderId,                   // orderID từ server trả về
       items: cartItems,
       totalPrice: totalPrice,
       tableNumber: selectedTable,
+      tableID: tableID,
       date: new Date().toLocaleString(),
       note: note,
-      status: "confirmed",
+      orderStatus: "confirmed",
     };
-
+  
     setOrders([...orders, newOrder]);
     setCartItems([]);
   };
-
-  // const handleLockToggle = (id: string) => {
-  //   setMenuItems((prevItems) =>
-  //     prevItems.map((item) =>
-  //       item._id === id ? { ...item, isLocked: !item.isLocked } : item
-  //     )
-  //   );
-  // };
-  // const handleLockToggle = async (id: string, currentLock: boolean) => {
-  //   try {
-  //     const newLockStatus = !currentLock;
-  
-  //     const res = await fetch(`http://localhost:1234/menu/api/meals/${id}/lock`, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ isLocked: newLockStatus }),
-  //     });
-  
-  //     const data = await res.json();
-  //     console.log("✅ Lock updated:", data);
-  
-  //     if (res.ok) {
-  //       // Cập nhật đúng trạng thái mới trong state
-  //       setMenuItems((prev) =>
-  //         prev.map((item) =>
-  //           item._id === id ? { ...item, isLocked: newLockStatus } : item
-  //         )
-  //       );
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Lỗi khi cập nhật trạng thái khóa:", err);
-  //   }
-  // };  
   
 
   const addToCart = (item: MenuItemType) => {
@@ -125,9 +91,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
-  const removeOrderFromListOrder = (id: string) => {
-    setOrders((prevItems) => prevItems.filter((item) => item.id !== id));
+
+  const removeOrderFromListOrder = async (id: string) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/orders/${id}`, {
+        method: "DELETE",
+      });
+  
+      if (!res.ok) {
+        throw new Error("Xóa order thất bại");
+      }
+  
+      setOrders((prevItems) => prevItems.filter((item) => item.id !== id));
+      console.log("✅ Đã xóa order thành công");
+    } catch (error) {
+      console.error("❌ Lỗi khi xóa order:", error);
+      alert("Không thể xóa đơn hàng. Vui lòng thử lại.");
+    }
   };
+  
 
   const updateMenuItem = (id: string, updates: Partial<MenuItemType>) => {
     setCartItems((prevItems) =>
@@ -177,9 +159,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         setNote,
         note,
         menuItems,
-        // handleLockToggle,
         updateMenuItem,
-        // updateOrderStatus,
         selectedTable,
         setSelectedTable,
         cartItems,

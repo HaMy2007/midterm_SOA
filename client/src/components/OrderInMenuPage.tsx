@@ -75,7 +75,7 @@ function OrderInMenuPage() {
   
         if (!updateRes.ok) throw new Error("Cập nhật order thất bại");
         console.log("✅ Đã thêm món vào order cũ");
-        placeOrder(); // clear cart
+        placeOrder(existingOrder.orderID, tableID); // clear cart
         navigate(`/${role}/dashboard/orders/${existingOrder.orderID}`);
 
       } else {
@@ -97,7 +97,7 @@ function OrderInMenuPage() {
         if (!res.ok) throw new Error("Tạo order thất bại");
         const resData = await res.json();
         const createdOrderID = resData.neworder.orderID;
-        placeOrder(); // clear cart
+        placeOrder(createdOrderID, tableID); // clear cart
         navigate(`/${role}/dashboard/orders/${createdOrderID}`);
       }
       

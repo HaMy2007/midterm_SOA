@@ -18,5 +18,4 @@ export interface OrderType {
   orderStatus: string;
   tableID: string;
   note: string;
-  status: string;
 }
