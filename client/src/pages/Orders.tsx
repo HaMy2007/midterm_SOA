@@ -19,7 +19,7 @@ const Orders = () => {
       <div className="flex items-center ">
         <MainHeadingTitle title="Hello customers, here's your orders" />
       </div>
-      <div className="h-full items-center w-4/5 bg-white shadow-2xl rounded-3xl p-4">
+      <div className="h-full items-center w-4/5 bg-white shadow-2xl rounded-3xl p-4 overflow-y-auto">
         {orders.length === 0 ? (
           <div className="flex items-center justify-center">
             <p className="text-black">No orders placed yet.</p>
