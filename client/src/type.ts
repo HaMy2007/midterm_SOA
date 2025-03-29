@@ -1,9 +1,9 @@
 export interface MenuItemType {
-  id: string;
+  _id: string;
   image: string;
   name: string;
   description: string;
-  price: string;
+  price: number;
   quantity: number;
   status: string;
   isLocked: boolean;
@@ -15,6 +15,8 @@ export interface OrderType {
   totalPrice: number;
   date: string;
   tableNumber: string;
+  orderStatus: string;
+  tableID: string;
   note: string;
   status: string;
 }

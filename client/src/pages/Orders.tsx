@@ -3,11 +3,89 @@ import { useCart } from "../context/CartContext";
 import { MdDeleteForever, MdModeEditOutline } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { useRole } from "../context/RoleContext";
+import { useEffect, useState } from "react";
+
+type Order = {
+  id: string;
+  tableNumber: number;
+  totalPrice: number;
+  date: string;
+  note: string;
+  status: string;
+  shift: string
+};
+
 
 const Orders = () => {
-  const { orders, removeOrderFromListOrder, updateOrderStatus } = useCart();
+  const { removeOrderFromListOrder,  } = useCart();
   const { role } = useRole();
   const navigate = useNavigate();
+
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("http://localhost:1234/order/api/orders");
+      const data = await res.json();
+      const mappedOrders = data.map((order: any) => ({
+        id: order.orderID,
+        tableNumber: order.tableNumber,
+        totalPrice: order.totalPrice,
+        date: order.createdTime,
+        note: order.note,
+        shift: order.shiftID,
+        status: order.orderStatus,
+      }));
+      setOrders(mappedOrders);
+    } catch (err) {
+      console.error("Lỗi lấy dữ liệu order:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(); // Gọi khi component mount
+  }, []);
+  const updateOrderStatus = async (id: string, newStatus: string) => {
+    try {
+      const response = await fetch(`http://localhost:1234/order/api/orders/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+      console.log("✅ Server response:", data);
+
+      if (response.ok) {
+        await fetchOrders(); // Cập nhật lại danh sách sau khi thay đổi
+      }
+    } catch (error) {
+      console.error("❌ Lỗi khi cập nhật trạng thái:", error);
+      alert("Cập nhật trạng thái đơn hàng thất bại.");
+    }
+  };
+  // useEffect(() => {
+  //   fetch("http://localhost:1234/order/api/orders")
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       // Nếu MongoDB trả về _id thì map sang id
+  //       const mappedOrders = data.map((order: any) => ({
+  //         id: order.orderID,
+  //         tableNumber: order.tableNumber,
+  //         totalPrice: order.totalPrice,
+  //         date: order.createdTime,
+  //         note: order.note,
+  //         shift: order.shiftID,
+  //         status: order.orderStatus,
+  //       }));
+  //       setOrders(mappedOrders);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Lỗi lấy dữ liệu order:", err);
+  //     });
+  // }, []);
 
   const handleEdit = (orderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -19,7 +97,7 @@ const Orders = () => {
       <div className="flex items-center ">
         <MainHeadingTitle title="Hello customers, here's your orders" />
       </div>
-      <div className="h-full items-center w-4/5 bg-white shadow-2xl rounded-3xl p-4">
+      <div className="h-full items-center w-4/5 bg-white shadow-2xl rounded-3xl p-4 overflow-y-auto">
         {orders.length === 0 ? (
           <div className="flex items-center justify-center">
             <p className="text-black">No orders placed yet.</p>
@@ -29,7 +107,7 @@ const Orders = () => {
             {orders.map((item) => (
               <div
                 key={item.id}
-                onClick={() => navigate(`${item.id}`)}
+                onClick={() => navigate(`/${role}/dashboard/orders/${item.id}`)}
                 className="flex items-center justify-between rounded-lg bg-gradient-to-r from-orange-200 to-pink-200 p-4 hover:shadow-lg transition-shadow duration-300 border border-gray-300"
               >
                 <div className="w-full">
@@ -39,7 +117,9 @@ const Orders = () => {
                   <h3 className="text- text-gray-700">
                     Total: ${item.totalPrice}
                   </h3>
-                  <p className="text-sm text-gray-600">Date: {item.date}</p>
+                  
+                  <p className="text-sm text-gray-600">Date: {new Date(item.date).toLocaleDateString("vi-VN")}</p>
+                  <p className="text-sm text-gray-600">Shift: {item.shift}</p>
                   <p className="text-sm text-gray-600">Note: {item.note}</p>
                   <p className="text-sm text-gray-600">Status: {item.status}</p>
                 </div>

@@ -12,7 +12,7 @@ console.log("🔗 Connecting to:", mongoURI);
 mongoose
   .connect(mongoURI, {
     // useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useUnifiedTopology: true,
     // serverSelectionTimeoutMS: 20000
   })
   .then(() => {
@@ -21,5 +21,3 @@ mongoose
   .catch((err) => {
     console.error("Database connection error:", err);
   });
-
-// console.log("mongo:", process.env.MONGO_URL);

@@ -9,16 +9,18 @@ const OrderDetailSchema = new Schema(
         tableNumber: { type: Number, required: true },
         totalPrice: { type: Number, required: true },
         createdTime: { type: Date, required: true },
-        orderStatus: { type: String, default: 'pending' },
+        note: { type: String, require: false},
+        orderStatus: { type: String, default: 'confirmed' },
         shiftID: { type: String, required: true },
         listMeal: [
             {
                 name: {type: String, required: true },
-                note: { type: String, required: true },
+                // note: { type: String, required: false },
                 quantity: { type: Number, required: true },
                 price: {type: Number, required: true },
                 status: {type: String, required: true },
-                mealID: { type: mongoose.Schema.Types.ObjectId, ref: 'meals' , required: true}
+                mealID: { type: mongoose.Schema.Types.ObjectId, ref: 'meals' , required: true},
+                image: { type: String, require: true }
             }
         ],
     },

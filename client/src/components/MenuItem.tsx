@@ -7,23 +7,26 @@ import { useCart } from "../context/CartContext";
 import { MenuItemType } from "../type";
 import { useParams } from "react-router";
 
-type MenuItemProps = MenuItemType;
+type MenuItemProps = MenuItemType & {
+  handleLockToggle: (id: string, currentLock: boolean) => void;
+};
 
 const MenuItem = ({
   image,
   name,
   description,
   price,
-  id,
+  _id,
   status,
   isLocked,
+  handleLockToggle,
 }: MenuItemProps) => {
-  const { addToCart, handleLockToggle } = useCart();
+  const { addToCart } = useCart();
   const { role } = useParams();
-
+  console.log("🔍 Món ăn:", name, "isLocked:", isLocked);
   const handleAddToCart = () => {
     addToCart({
-      id,
+      _id,
       image,
       name,
       description,
@@ -67,7 +70,7 @@ const MenuItem = ({
             {/* Nút lock/unlock cho manager và chef */}
             {(role === "manager" || role === "chef") && (
               <button
-                onClick={() => handleLockToggle(id)}
+                onClick={() => handleLockToggle(_id, isLocked)}
                 className="rounded bg-orange-600 hover:bg-orange-700 text-white p-1"
               >
                 {isLocked ? (

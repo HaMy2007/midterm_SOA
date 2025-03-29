@@ -27,7 +27,7 @@ const OrderItem = ({ item }: Props) => {
         <div className="flex items-center">
           <button
             className=" text-orange-600 hover:text-orange-700 text-xl cursor-pointer rounded-full text-center px-2.5"
-            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            onClick={() => updateQuantity(item._id, item.quantity + 1)}
           >
             +
           </button>
@@ -35,7 +35,7 @@ const OrderItem = ({ item }: Props) => {
 
           <button
             className=" text-orange-600 hover:text-orange-700 text-xl cursor-pointer rounded-full text-center px-2.5"
-            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+            onClick={() => updateQuantity(item._id, item.quantity - 1)}
           >
             -
           </button>
@@ -43,7 +43,7 @@ const OrderItem = ({ item }: Props) => {
 
         <button
           className="absolute right-0 -bottom-2.5"
-          onClick={() => removeFromCart(item.id)}
+          onClick={() => removeFromCart(item._id)}
         >
           <XCircleIcon className="size-5 bg-orange-600 text-white hover:bg-orange-700 rounded-full" />
         </button>

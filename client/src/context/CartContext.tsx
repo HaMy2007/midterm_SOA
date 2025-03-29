@@ -16,9 +16,9 @@ type CartContextType = {
   placeOrder: () => void;
   setSelectedTable: (name: string) => void;
   setNote: (note: string) => void;
-  updateOrderStatus: (name: string, newStatus: string) => void;
+  // updateOrderStatus: (name: string, newStatus: string) => void;
   updateMenuItem: (id: string, updates: Partial<MenuItemType>) => void;
-  handleLockToggle: (id: string) => void;
+  // handleLockToggle: (id: string, currentLock: boolean) => void;
   updateOrderStatusForMeal: (
     orderId: string,
     itemId: string,
@@ -34,7 +34,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cartItems, setCartItems] = useState<MenuItemType[]>([]);
   const [orders, setOrders] = useState<OrderType[]>([]);
-  const [menuItems, setMenuItems] = useState<MenuItemType[]>(menuItemData);
+  const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
+
   const [selectedTable, setSelectedTable] = useState<string>("Table 1");
   const [note, setNote] = useState<string>("");
 
@@ -58,28 +59,61 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setCartItems([]);
   };
 
-  const handleLockToggle = (id: string) => {
-    setMenuItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, isLocked: !item.isLocked } : item
-      )
-    );
-  };
+  // const handleLockToggle = (id: string) => {
+  //   setMenuItems((prevItems) =>
+  //     prevItems.map((item) =>
+  //       item._id === id ? { ...item, isLocked: !item.isLocked } : item
+  //     )
+  //   );
+  // };
+  // const handleLockToggle = async (id: string, currentLock: boolean) => {
+  //   try {
+  //     const newLockStatus = !currentLock;
+  
+  //     const res = await fetch(`http://localhost:1234/menu/api/meals/${id}/lock`, {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ isLocked: newLockStatus }),
+  //     });
+  
+  //     const data = await res.json();
+  //     console.log("✅ Lock updated:", data);
+  
+  //     if (res.ok) {
+  //       // Cập nhật đúng trạng thái mới trong state
+  //       setMenuItems((prev) =>
+  //         prev.map((item) =>
+  //           item._id === id ? { ...item, isLocked: newLockStatus } : item
+  //         )
+  //       );
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Lỗi khi cập nhật trạng thái khóa:", err);
+  //   }
+  // };  
+  
 
   const addToCart = (item: MenuItemType) => {
+    if (!item._id) {
+      console.error("❌ Món ăn không có _id hợp lệ:", item);
+      return;
+    }
+  
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.name === item.name);
+      const existingItem = prevItems.find((i) => i._id === item._id);
+      console.log("id meal: ", item._id);
       if (existingItem) {
         return prevItems.map((i) =>
-          i.name === item.name ? { ...i, quantity: i.quantity + 1 } : i
+          i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
-      return [...prevItems, { ...item, quantity: 1, id: crypto.randomUUID() }];
+      return [...prevItems, { ...item, quantity: 1 }];
     });
   };
+  
 
   const removeFromCart = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
@@ -87,7 +121,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       quantity = 1;
     }
     setCartItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+      prevItems.map((item) => (item._id === id ? { ...item, quantity } : item))
     );
   };
 
@@ -95,17 +129,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setOrders((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  const updateOrderStatus = (id: string, newStatus: string) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
-  };
-
   const updateMenuItem = (id: string, updates: Partial<MenuItemType>) => {
     setCartItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, ...updates } : item))
+      prevItems.map((item) => (item._id === id ? { ...item, ...updates } : item))
     );
   };
 
@@ -118,7 +144,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       prevOrders.map((order) => {
         if (order.id === orderId) {
           const updatedItems = order.items.map((item) =>
-            item.id === itemId ? { ...item, status: newStatus } : item
+            item._id === itemId ? { ...item, status: newStatus } : item
           );
           return { ...order, items: updatedItems };
         }
@@ -151,9 +177,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         setNote,
         note,
         menuItems,
-        handleLockToggle,
+        // handleLockToggle,
         updateMenuItem,
-        updateOrderStatus,
+        // updateOrderStatus,
         selectedTable,
         setSelectedTable,
         cartItems,

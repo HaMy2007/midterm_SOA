@@ -3,7 +3,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const app = express();
 
 app.use((req, res, next) => {
-    console.log(`📡 Request: ${req.method} ${req.originalUrl}`);
+    // console.log(`📡 Request: ${req.method} ${req.originalUrl}`);
     next();
 });
 
@@ -12,6 +12,7 @@ app.use("/menu", createProxyMiddleware({
     target: "http://localhost:3000", 
     changeOrigin: true , 
     logLevel: "debug", 
+    // pathRewrite: { "^/menu": "" } 
 }));
 app.use("/order", createProxyMiddleware({ 
     target: "http://localhost:3001", 

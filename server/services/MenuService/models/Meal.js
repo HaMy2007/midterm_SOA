@@ -8,6 +8,7 @@ const MealSchema = new Schema(
         image: { type: String, required: true },
         description: { type: String, required: true },
         isAvailable: { type: Boolean, default: true },
+        isLocked: { type: Boolean},
         category: { type: String, required: true },
         ingredients: [
             {
